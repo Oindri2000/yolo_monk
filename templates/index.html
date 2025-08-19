@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>YOLOv8 Human Detection</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>YOLOv8 Human Detection</h1>
+        <input type="file" id="fileInput" accept="image/*">
+        <button onclick="uploadImage()">Upload & Detect</button>
+
+        <div id="result" style="display:none;">
+            <h2>Result</h2>
+            <img id="outputImage" src="" alt="Detection result">
+            <div class="download-buttons">
+                <a id="downloadImage" class="btn" download>Download Image</a>
+                <a id="downloadJSON" class="btn" download>Download JSON</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function uploadImage() {
+            let fileInput = document.getElementById('fileInput').files[0];
+            if (!fileInput) {
+                alert("Please select an image first.");
+                return;
+            }
+            let formData = new FormData();
+            formData.append('image', fileInput);
+
+            fetch('/detect', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.image) {
+                    document.getElementById('outputImage').src = "data:image/jpeg;base64," + data.image;
+                    document.getElementById('result').style.display = 'block';
+                    document.getElementById('downloadImage').href = `/download/image/${data.image_file}`;
+                    document.getElementById('downloadJSON').href = `/download/json/${data.json_file}`;
+                } else {
+                    alert("No humans detected.");
+                }
+            })
+            .catch(err => console.error(err));
+        }
+    </script>
+</body>
+</html>
